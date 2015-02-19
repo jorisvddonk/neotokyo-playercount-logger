@@ -21,7 +21,7 @@ Just a small NodeJS program that gets the number of people playing [Neotokyo°](
 # TODOs
 
 1. Check phant return code properly
-2. Quit on done() (so the script can be crontabbed) or implement a fetch loop.
+2. Implement a fetch loop so that you don't have to run your own scheduler which runs the script whenever appropriate. This loop should make proper use of the phant return code.
 3. Refactor some code?
 
 # LICENSE

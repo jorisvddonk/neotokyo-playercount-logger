@@ -162,6 +162,9 @@ sendQuery("\\appid\\244630", function(results, numberOfPlayers, numberOfAlcoholi
       }
     }).on('complete', function(data, response){
       console.log("Request sent. Response code: " + response.statusCode);
+      process.exit(0);
     });
+  } else {
+    process.exit(0);
   }
 });
