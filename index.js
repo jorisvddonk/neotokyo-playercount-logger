@@ -6,7 +6,10 @@ var _ = require('lodash');
 var Q = require('Q');
 var restler = require('restler');
 var fs = require('fs');
+var util = require('util');
+var ssq = require('ssq');
 var MAXPAGES = 50;
+var alcoholicBeverageRegex = /.*\((\d*)\)$/; // capture first group
 
 CONFIG_JSON = {};
 try {
@@ -35,6 +38,30 @@ var sendSingleQuery = function(socket, prevIP, prevPort, queryStr){
   socket.send(buf.get(), 0, buf.length, 27011, "hl2master.steampowered.com", cb);
 }
 
+var getSteamServerStatusPromise = function(receivedServer) {
+  var deferred = Q.defer();
+  steamServerStatus.getServerStatus(receivedServer.ip, receivedServer.port, function(serverInfo) {
+    if (serverInfo.error) {
+      deferred.reject(serverInfo.error);
+    } else {
+      deferred.resolve(serverInfo);
+    }
+  });
+  return deferred.promise;
+}
+
+var getSteamServerPlayersPromise = function(receivedServer) {
+  var deferred = Q.defer();
+  ssq.players(receivedServer.ip, receivedServer.port, function(err,data) {
+    if (err) {
+      deferred.reject(err);
+    } else {
+      deferred.resolve(data);
+    }
+  });
+  return deferred.promise;
+}
+
 var sendQuery = function(queryStr, callback) {
   var i = 0;
   var socket;
@@ -52,26 +79,30 @@ var sendQuery = function(queryStr, callback) {
     var promises = _.map(receivedServers, function(receivedServer) {
       var deferred = Q.defer();
       console.log("Getting details for server " + receivedServer.ip + ":" + receivedServer.port);
-      steamServerStatus.getServerStatus(receivedServer.ip, receivedServer.port, function(serverInfo) {
-        if (serverInfo.error) {
-          deferred.reject(serverInfo.error);
-        } else {
-          deferred.resolve(serverInfo);
-        }
+      var ipromises = [getSteamServerStatusPromise(receivedServer), getSteamServerPlayersPromise(receivedServer)];
+      Q.allSettled(ipromises).then(function(results) {
+        deferred.resolve({"serverStatus": results[0].value, "serverPlayers": results[1].value});
       });
       return deferred.promise;
     });
     // Query all servers and wait until they're all settled...
     Q.allSettled(promises).then(function(results) {
-      var fulfilledPromises = _.filter(results, function(result) {
-        return result.state === "fulfilled";
-      });
-      var fulfilledResults = _.pluck(fulfilledPromises, 'value');
-      var numberOfPlayers = _.reduce(fulfilledResults, function(memo, result) {
-        return memo + result.numberOfPlayers;
+      vResults = _.pluck(results, 'value');
+      var numberOfPlayers = _.reduce(vResults, function(memo, result) {
+        return memo + (result.serverStatus !== undefined ? result.serverStatus.numberOfPlayers : 0);
+      }, 0);
+      var numberOfAlcoholicBeverages = _.reduce(vResults, function(memo, result) {
+        var numBevsOnServer = _.reduce(result.serverPlayers, function(mem, player) {
+          var numBevsForPlayer = 0;
+          if (alcoholicBeverageRegex.test(player.name)) {
+            numBevsForPlayer = parseInt(alcoholicBeverageRegex.exec(player.name)[1])
+          }
+          return mem + numBevsForPlayer;
+        }, 0);
+        return memo + numBevsOnServer;
       }, 0);
       if (callback !== undefined) {
-        callback(fulfilledResults, numberOfPlayers);
+        callback(vResults, numberOfPlayers, numberOfAlcoholicBeverages);
       }
     });
   }
@@ -115,13 +146,16 @@ var parseResponse = function(buf) {
   return retval;
 }
 
-sendQuery("\\appid\\244630", function(results, numberOfPlayers) {
+sendQuery("\\appid\\244630", function(results, numberOfPlayers, numberOfAlcoholicBeverages) {
   console.log("Number of Neotokyo players: " + numberOfPlayers);
+  console.log("Number of alcoholic beverages: " + numberOfAlcoholicBeverages);
+  //console.log(util.inspect(results, {depth: 10}));
   if (CONFIG_JSON.hasOwnProperty("phant-post")) {
     console.log("Submitting to Phant...");
     restler.post(CONFIG_JSON["phant-post"]["post-url"], {
       "data": {
-        numplayers: "" + numberOfPlayers
+        numplayers: "" + numberOfPlayers,
+        numalcoholicbeverages: "" + numberOfAlcoholicBeverages
       },
       "headers": {
         'Phant-Private-Key': CONFIG_JSON["phant-post"]["private-key"]

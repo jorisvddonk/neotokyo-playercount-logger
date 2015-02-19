@@ -20,9 +20,9 @@ Just a small NodeJS program that gets the number of people playing [Neotokyo°](
 
 # TODOs
 
-1. Count number of alcoholic beverages consumed by players (via the Standard Neotokyo° Consumed Alcoholic Beverages nickname convention)
-2. Check phant return code properly
-3. Quit on done() (so the script can be crontabbed) or implement a fetch loop.
+1. Check phant return code properly
+2. Quit on done() (so the script can be crontabbed) or implement a fetch loop.
+3. Refactor some code?
 
 # LICENSE
 

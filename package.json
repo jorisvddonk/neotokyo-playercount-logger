@@ -9,10 +9,11 @@
   "author": "Joris van de Donk",
   "license": "MIT",
   "dependencies": {
-    "steam-server-status": "^1.0.2",
     "buffer-builder": "^0.2.0",
     "lodash": "^3.2.0",
     "q": "^1.1.2",
-    "restler": "^3.2.2"
+    "restler": "^3.2.2",
+    "ssq": "git://github.com/gpittarelli/node-ssq",
+    "steam-server-status": "^1.0.2"
   }
 }
