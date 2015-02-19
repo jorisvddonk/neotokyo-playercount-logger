@@ -39,7 +39,6 @@ var sendQuery = function(queryStr, callback) {
   var i = 0;
   var socket;
   socket = dgram.createSocket('udp4');
-  socket.bind(51202);
 
   var servers = [];
 
