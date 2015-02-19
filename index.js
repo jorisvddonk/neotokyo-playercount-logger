@@ -111,7 +111,7 @@ var parseResponse = function(buf) {
   var retval = [];
   for (var offset = 6; offset < lastoffset; offset+=6) {
     var ipport = getIPPort(buf, offset);
-  retval.push(ipport);
+    retval.push(ipport);
   }
   return retval;
 }
@@ -121,8 +121,12 @@ sendQuery("\\appid\\244630", function(results, numberOfPlayers) {
   if (CONFIG_JSON.hasOwnProperty("phant-post")) {
     console.log("Submitting to Phant...");
     restler.post(CONFIG_JSON["phant-post"]["post-url"], {
-      "data": {numplayers: "" + numberOfPlayers},
-      "headers": {'Phant-Private-Key': CONFIG_JSON["phant-post"]["private-key"]}
+      "data": {
+        numplayers: "" + numberOfPlayers
+      },
+      "headers": {
+        'Phant-Private-Key': CONFIG_JSON["phant-post"]["private-key"]
+      }
     }).on('complete', function(data, response){
       console.log("Request sent. Response code: " + response.statusCode);
     });
