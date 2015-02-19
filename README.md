@@ -11,12 +11,12 @@ Just a small NodeJS program that gets the number of people playing [Neotokyo°](
 
 # config.json format
 
-{
-	"phant-post": {
-		"post-url": PHANT ENDPOINT URL TO POST TO,
-		"private-key": PHANT PRIVATE KEY
-	}
-}
+    {
+        "phant-post": {
+            "post-url": PHANT ENDPOINT URL TO POST TO,
+            "private-key": PHANT PRIVATE KEY
+        }
+    }
 
 # TODOs
 
@@ -26,4 +26,4 @@ Just a small NodeJS program that gets the number of people playing [Neotokyo°](
 
 # LICENSE
 
-MIT
+MIT. See LICENSE file.
