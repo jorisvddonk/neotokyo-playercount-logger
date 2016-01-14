@@ -9,6 +9,7 @@ var fs = require('fs');
 var util = require('util');
 var ssq = require('ssq');
 var MAXPAGES = 50;
+var TIMEOUT = 15000;
 var alcoholicBeverageRegex = /.*\((\d*)\)$/; // capture first group
 
 CONFIG_JSON = {};
@@ -47,6 +48,9 @@ var getSteamServerStatusPromise = function(receivedServer) {
       deferred.resolve(serverInfo);
     }
   });
+  setTimeout(function(){
+    deferred.reject();
+  }, TIMEOUT);
   return deferred.promise;
 }
 
@@ -59,6 +63,9 @@ var getSteamServerPlayersPromise = function(receivedServer) {
       deferred.resolve(data);
     }
   });
+  setTimeout(function(){
+    deferred.reject();
+  }, TIMEOUT);
   return deferred.promise;
 }
 
